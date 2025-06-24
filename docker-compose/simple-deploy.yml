@@ -1,0 +1,35 @@
+version: '3'
+services:
+  nocodb:
+    image: nocodb/nocodb:latest
+    container_name: nocodb
+    environment:
+      - NC_DB=pg://db:5432?u=postgres&p=123456&d=nocodb
+      - NC_PUBLIC_URL=http://42.192.204.166
+      - LANG=zh_CN.UTF-8
+    ports:
+      - "80:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    volumes:
+      - nocodb_data:/usr/app/data
+  db:
+    image: postgres:16.6
+    container_name: nocodb-db
+    environment:
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=nocodb
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      retries: 5
+      timeout: 2s
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+volumes:
+  nocodb_data:
+  db_data:
